@@ -145,22 +145,59 @@ function findImportInsertPosition(
   const text = document.getText();
   const lines = text.split("\n");
 
-  let lastImportLine = -1;
+  let lastImportEndLine = -1;
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim();
-    if (
-      line.startsWith("import ") ||
-      (line.startsWith("const ") && line.includes("require("))
-    ) {
-      lastImportLine = i;
-    } else if (line && !line.startsWith("//") && !line.startsWith("/*")) {
-      break; // Hit non-import, non-comment code
+    
+    // Check if this line starts an import
+    if (line.startsWith("import ") || (line.startsWith("const ") && line.includes("require("))) {
+      // Find the end of this import statement
+      let importEndLine = i;
+      
+      // If the import doesn't end on the same line (no semicolon), find where it ends
+      if (!line.includes(";")) {
+        for (let j = i + 1; j < lines.length; j++) {
+          const nextLine = lines[j].trim();
+          if (nextLine.includes(";") || nextLine.includes("from ")) {
+            importEndLine = j;
+            break;
+          }
+          // If we hit a line that doesn't look like part of an import, stop
+          if (nextLine && !nextLine.startsWith("}") && !nextLine.includes(",") && !nextLine.match(/^[A-Za-z_$][A-Za-z0-9_$]*,?$/)) {
+            importEndLine = j - 1;
+            break;
+          }
+        }
+      }
+      
+      lastImportEndLine = importEndLine;
+      i = importEndLine; // Skip to the end of this import
+    } else if (line && !line.startsWith("//") && !line.startsWith("/*") && line !== "") {
+      // Hit non-import, non-comment, non-empty code
+      break;
     }
   }
 
-  const insertLine = lastImportLine >= 0 ? lastImportLine + 1 : 0;
-  return new vscode.Position(insertLine, 0);
+  if (lastImportEndLine >= 0) {
+    // Insert after the last import statement
+    let insertLine = lastImportEndLine + 1;
+    
+    // Skip any empty lines or comments immediately after imports
+    while (insertLine < lines.length) {
+      const line = lines[insertLine].trim();
+      if (line === "" || line.startsWith("//") || line.startsWith("/*")) {
+        insertLine++;
+      } else {
+        break;
+      }
+    }
+    
+    return new vscode.Position(insertLine, 0);
+  } else {
+    // No imports found, insert at the top
+    return new vscode.Position(0, 0);
+  }
 }
 
 // Filter out imports that already exist
