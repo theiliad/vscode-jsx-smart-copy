@@ -1,6 +1,4 @@
-<p align="center">
-  <img src="./images/icon.png" alt="JSX Smart Copy Paste Logo" width="128" height="128">
-</p>
+<img src="./images/icon.png" alt="JSX Smart Copy Paste Logo" width="128" height="128">
 
 # JSX Smart Copy Paste
 
