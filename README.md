@@ -1,8 +1,8 @@
-# JSX Smart Copy Paste ⚛️
-
 <p align="center">
   <img src="./images/icon.png" alt="JSX Smart Copy Paste Logo" width="128" height="128">
 </p>
+
+# JSX Smart Copy Paste
 
 A VS Code extension that intelligently copies JSX elements along with their required imports, making component reuse seamless across files.
 
